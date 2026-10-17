@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dental AI — IOPA Research Assistant</title>
+<style>
+:root{--navy:#102b46;--teal:#087e8b;--bg:#f4f8fb;--ink:#1e293b;--muted:#5b6b7b;--line:#dce6ed}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+header{background:linear-gradient(120deg,#102b46,#087e8b);color:white;padding:28px 18px}
+.wrap{max-width:900px;margin:auto}header h1{margin:0 0 6px;font-size:clamp(1.6rem,4vw,2.3rem)}header p{margin:0;opacity:.92}
+main{padding:22px 14px 40px}.card{background:white;border:1px solid var(--line);border-radius:16px;padding:20px;margin:0 0 16px;box-shadow:0 5px 18px #102b460b}
+h2{margin:0 0 12px;font-size:1.15rem;color:var(--navy)}.hint{color:var(--muted);font-size:.94rem}
+.drop{border:2px dashed #91b7c7;border-radius:12px;padding:22px;text-align:center;background:#f8fcfd}
+input[type=file]{max-width:100%;margin:12px 0}button{background:var(--teal);border:0;color:white;border-radius:9px;padding:12px 17px;font-size:1rem;font-weight:700;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}
+#preview{display:none;max-width:100%;max-height:440px;object-fit:contain;margin:14px auto 0;border-radius:8px;background:#111}
+.status{padding:12px;border-radius:10px;background:#fff8e6;border:1px solid #f0d99a;color:#634d0a}
+.warning{padding:14px;border-radius:10px;background:#fff1f0;border:1px solid #f4c5c1;color:#7b2420}
+.small{font-size:.86rem;color:var(--muted)}footer{text-align:center;padding:0 16px 24px;color:var(--muted);font-size:.85rem}
+label{font-weight:700;display:block;margin-bottom:8px}ul{padding-left:22px}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<h1>Dental AI — IOPA Research Assistant</h1>
+<p>Early-stage research prototype for intraoral periapical radiographs</p>
+</div></header>
+<main class="wrap">
+<section class="card">
+<h2>1. Upload an IOPA image</h2>
+<p class="hint">Use only synthetic, public-domain, or properly de-identified images that you are authorized to use for research. Do not upload identifiable patient records.</p>
+<div class="drop">
+<label for="xray">Choose an IOPA radiograph (PNG, JPG, or JPEG)</label>
+<input id="xray" type="file" accept="image/png,image/jpeg,.jpg,.jpeg,.png">
+<p class="small">For this first version, the image is previewed in your browser only. It is not uploaded to an AI server.</p>
+<img id="preview" alt="Selected IOPA image preview">
+</div>
+<p id="fileInfo" class="small" aria-live="polite"></p>
+</section>
+<section class="card">
+<h2>2. Research status</h2>
+<div class="status"><strong>AI model not connected yet.</strong><br>This version only checks the image file and displays a preview. It does not interpret the X-ray or provide a diagnosis.</div>
+<p>Next development stage: connect a documented, IOPA-specific research model through a separate backend, then validate it against dentist-reviewed reference findings.</p>
+<button id="clear" type="button">Clear image</button>
+</section>
+<section class="card">
+<h2>Safety and privacy</h2>
+<div class="warning"><strong>Research use only — not for diagnosis or treatment decisions.</strong> Do not use this prototype to rule out disease, delay care, or choose treatment.</div>
+<ul>
+<li>This page does not save the selected image or send it to a server.</li>
+<li>Do not upload patient images unless you have the necessary consent, authorization, and institutional approval.</li>
+<li>Clinical use would require appropriate validation, security, and review of applicable regulatory requirements.</li>
+</ul>
+</section>
+</main>
+<footer>Dental AI IOPA Research Assistant · Prototype v0.1</footer>
+<script>
+const input = document.getElementById('xray');
+const preview = document.getElementById('preview');
+const fileInfo = document.getElementById('fileInfo');
+let currentUrl = null;
+input.addEventListener('change', () => {
+  if (currentUrl) URL.revokeObjectURL(currentUrl);
+  const file = input.files && input.files[0];
+  if (!file) { preview.style.display='none'; fileInfo.textContent=''; return; }
+  const allowed = ['image/png','image/jpeg'];
+  if (!allowed.includes(file.type)) {
+    input.value=''; preview.style.display='none';
+    fileInfo.textContent='Please choose a PNG or JPEG image.';
+    return;
+  }
+  if (file.size > 12 * 1024 * 1024) {
+    input.value=''; preview.style.display='none';
+    fileInfo.textContent='Please choose an image smaller than 12 MB.';
+    return;
+  }
+  currentUrl = URL.createObjectURL(file);
+  preview.src = currentUrl;
+  preview.style.display='block';
+  fileInfo.textContent = `${file.name} · ${(file.size/1024/1024).toFixed(2)} MB · Preview only; not analyzed.`;
+});
+document.getElementById('clear').addEventListener('click', () => {
+  input.value='';
+  if (currentUrl) URL.revokeObjectURL(currentUrl);
+  currentUrl=null; preview.removeAttribute('src'); preview.style.display='none'; fileInfo.textContent='';
+});
+</script>
+</body>
+</html>
